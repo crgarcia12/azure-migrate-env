@@ -42,37 +42,52 @@ The deployment creates:
 ## Deployment
 
 1. Initialize Terraform:
-\```bash
+```bash
 terraform init
-\```
+```
 
 2. Review the deployment plan:
-\```bash
+```bash
 terraform plan
-\```
+```
 
 3. Apply the configuration:
-\```bash
+```bash
 terraform apply
-\```
+```
 
 ## Required Variables
 
 The following variables need to be configured:
 
-- \`location\`: Azure region for deployment
-- \`adminuser\`: Administrator username
-- Local variables including:
-  - \`rgname\`: Resource group name
-  - \`vnet_name\`: Virtual network name
-  - \`vmname\`: Virtual machine name
-  - \`address_spaces\`: VNet address space
-  - \`subnets\`: Subnet configurations
-  - \`nsg_rules\`: Network security group rules
-  - \`DSCInstallWindowsFeaturesUri\`: URI for DSC configuration
-  - \`HVHostSetupScriptUri\`: URI for Hyper-V setup script
+- `location`: Azure region for deployment
+- `adminuser`: Administrator username
+- `company_code`: (Optional) Three-letter company code for resource naming
+- `instance_number`: (Optional) Instance number for resource naming (1-999)
 
-If you want to use a different Address Space, then please adjust this one too.
+## Local Variables
+
+The following local variables are configured in the deployment:
+
+- `rgname`: Resource group name (format: "rg-{company_code}-hyperv-{location}-{instance}")
+- `vnet_name`: Virtual network name (format: "vnet-{company_code}-hyperv-{location}-{instance}")
+- `vmname`: Virtual machine name
+- `address_spaces`: VNet address space (default: ["172.100.0.0/17"])
+- `subnets`: Subnet configurations
+- `nsg_rules`: Network security group rules
+- `DSCInstallWindowsFeaturesUri`: URI for DSC configuration
+- `HVHostSetupScriptUri`: URI for Hyper-V setup script
+
+## Example Configuration
+
+Create a `terraform.tfvars` file with your values:
+
+```hcl
+location        = "westeurope"
+adminuser       = "azureadmin"
+company_code    = "xyz"      # Optional: Your three-letter company code
+instance_number = 1          # Will generate "001" suffix
+```
 
 ## Post-Deployment Configuration
 
@@ -83,7 +98,7 @@ The VM is automatically configured with:
 
 ## Outputs
 
-- \`admin_password\`: Generated administrator password (sensitive value)
+- `admin_password`: Generated administrator password (sensitive value)
 
 ## Network Architecture
 
@@ -98,6 +113,16 @@ The deployment creates two network interfaces:
    - Accelerated networking enabled
    - Static private IP: 172.100.1.4
 
+## Custom Address Space
+
+If you want to use a different address space, modify the `address_spaces` local variable in your configuration:
+
+```hcl
+locals {
+  address_spaces = ["10.0.0.0/16"]  # Example of custom address space
+}
+```
+
 ## Troubleshooting
 
 If deployment fails:
@@ -109,9 +134,9 @@ If deployment fails:
 ## Clean Up
 
 To remove all resources:
-\```bash
+```bash
 terraform destroy
-\```
+```
 
 ## Contributing
 
