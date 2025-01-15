@@ -6,7 +6,7 @@ locals {
   
   vnet_name      = var.company_code != "" ? "vnet-${local.company_prefix}-hyperv-${local.location_map[var.location]}-${local.instance_suffix}" : "vnet-hyperv-${local.location_map[var.location]}-${local.instance_suffix}"
   appName        = "hyperv"
-  # address_spaces = ["172.100.0.0/17"]
+  address_spaces = ["172.100.0.0/17"]
   location_map   = jsondecode(file("${path.module}/configs/geo_codes.tf.json")).locals.builtin_azure_backup_geo_codes               
   vmname         = var.company_code != "" ? "${local.company_prefix}${var.vmname}${local.location_map[var.location]}${local.instance_suffix}" : "${var.vmname}${local.location_map[var.location]}${local.instance_suffix}"
   rgname         = var.company_code != "" ? "rg-${local.company_prefix}-${local.appName}-${local.location_map[var.location]}-${local.instance_suffix}" : "rg-${local.appName}-${local.location_map[var.location]}-${local.instance_suffix}"

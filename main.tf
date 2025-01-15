@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "rg" {
 # Create virtual network
 resource "azurerm_virtual_network" "hypervnetwork" {
   name                = local.vnet_name
-  address_space       = ["172.100.0.0/17"]
+  address_space       = local.address_spaces
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 }
