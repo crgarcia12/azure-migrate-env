@@ -32,7 +32,7 @@ variable "artifacts_location" {
 
 variable "location" {
   description = "Location for all resources."
-  default     = "switzerlandnorth"
+  default     = "swedencentral"
 }
 
 variable "hostvmsize" {
