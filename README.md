@@ -42,17 +42,18 @@ The deployment creates:
 ## Deployment
 
 1. Initialize Terraform:
-```bash
+```powershell
+$env:TF_VAR_vmpassword = "YourSecurePasswordUsedToLoginToTheVM"
 terraform init
 ```
 
 2. Review the deployment plan:
-```bash
+```powershell
 terraform plan
 ```
 
 3. Apply the configuration:
-```bash
+```powershell
 terraform apply
 ```
 
@@ -69,9 +70,9 @@ The following variables need to be configured:
 
 The following local variables are configured in the deployment:
 
-- `rgname`: Resource group name (format: "rg-{company_code}-hyperv-{location}-{instance}")
+- `rg_name`: Resource group name (format: "rg-{company_code}-hyperv-{location}-{instance}")
 - `vnet_name`: Virtual network name (format: "vnet-{company_code}-hyperv-{location}-{instance}")
-- `vmname`: Virtual machine name
+- `vm_name`: Virtual machine name
 - `address_spaces`: VNet address space (default: ["172.100.0.0/17"])
 - `subnets`: Subnet configurations
 - `nsg_rules`: Network security group rules

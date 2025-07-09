@@ -44,14 +44,7 @@ variable "hostvmsize" {
   }
 }
 
-variable "vmname" {
-  description = "Name of the VM"
-  type        = string  
-  default     = "hvm"
-}
-
-variable "adminuser" {
-  description = "Admin Username for the VM" 
-  type = string
-  default = "demoadmin"
+variable "vmpassword" {
+  type      = string
+  sensitive = true
 }

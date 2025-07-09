@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "rg" {
-  name     = local.rgname
+  name     = local.rg_name
   location = var.location
 }
 
@@ -23,7 +23,7 @@ resource "azurerm_subnet" "subnets" {
 
 # Create public IPs
 resource "azurerm_public_ip" "hypervpublicip" {
-  name                = "${local.vmname}-ip"
+  name                = "${local.vm_name}-ip"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
@@ -32,7 +32,7 @@ resource "azurerm_public_ip" "hypervpublicip" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "nsgs" {
   for_each            = { for subnet in local.subnets : subnet.nsg_name => subnet }
-  name                = "${local.vmname}-${each.value.nsg_name}"
+  name                = "${local.vm_name}-${each.value.nsg_name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -54,12 +54,12 @@ resource "azurerm_network_security_group" "nsgs" {
 
 # Create network interface
 resource "azurerm_network_interface" "hypervnicprimary" {
-  name                = "${local.vmname}-nic-primary"
+  name                = "${local.vm_name}-nic-primary"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
-    name                          = "${local.vmname}-ipconfig"
+    name                          = "${local.vm_name}-ipconfig"
     subnet_id                     = azurerm_subnet.subnets["nat"].id
     private_ip_address_allocation = "Static"
     private_ip_address            = "172.100.0.4"
@@ -69,12 +69,12 @@ resource "azurerm_network_interface" "hypervnicprimary" {
 
 # Create network interface
 resource "azurerm_network_interface" "hypervnicsecondary" {
-  name                = "${local.vmname}-nic-secondary"
+  name                = "${local.vm_name}-nic-secondary"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
-    name                          = "${local.vmname}-ipconfig"
+    name                          = "${local.vm_name}-ipconfig"
     subnet_id                     = azurerm_subnet.subnets["hypervlan"].id
     private_ip_address_allocation = "Static"
     private_ip_address            = "172.100.1.4"
@@ -109,43 +109,27 @@ resource "azurerm_subnet_route_table_association" "azurevms_association" {
 }
 
 
-# Generate random text for a unique storage account name
-resource "random_id" "randomId" {
-  keepers = {
-    # Generate a new ID only when a new resource group is defined
-    resource_group = azurerm_resource_group.rg.name
-  }
-
-  byte_length = 8
-}
-
 # Create storage account for boot diagnostics
 resource "azurerm_storage_account" "diagstorage" {
-  name                     = "diag${random_id.randomId.hex}"
+  name                     = replace("${local.prefix}-diag", "-", "")
   location                 = azurerm_resource_group.rg.location
   resource_group_name      = azurerm_resource_group.rg.name
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
 
-#Generate password
-resource "random_password" "admin_password" {
-  length  = 16
-  special = true
-}
-
 # Create virtual machine
 resource "azurerm_windows_virtual_machine" "hypervvm" {
-  name                  = local.vmname
+  name                  = "${local.vm_name}"
   location              = azurerm_resource_group.rg.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [azurerm_network_interface.hypervnicprimary.id, azurerm_network_interface.hypervnicsecondary.id]
   size                  = "Standard_E16_v3"
-  admin_username        = var.adminuser
-  admin_password        = random_password.admin_password.result
+  admin_username        = "adminuser"
+  admin_password        = var.vmpassword
 
   os_disk {
-    name                 = "${local.vmname}-os"
+    name                 = "${local.vm_name}-os"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
@@ -163,7 +147,7 @@ resource "azurerm_windows_virtual_machine" "hypervvm" {
 }
 
 resource "azurerm_managed_disk" "datadisk" {
-  name                 = "${local.vmname}-disk1"
+  name                 = "${local.vm_name}-disk1"
   location             = azurerm_resource_group.rg.location
   resource_group_name  = azurerm_resource_group.rg.name
   storage_account_type = "Standard_LRS"
@@ -204,7 +188,7 @@ resource "azurerm_virtual_machine_extension" "hypervvmext" {
     azurerm_virtual_machine_data_disk_attachment.datadiskattach,
     azurerm_virtual_machine_extension.vmExtension
   ]
-  name                 = "${local.vmname}-vmext-hyperv"
+  name                 = "${local.vm_name}-vmext-hyperv"
   virtual_machine_id   = azurerm_windows_virtual_machine.hypervvm.id
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
@@ -214,17 +198,11 @@ resource "azurerm_virtual_machine_extension" "hypervvmext" {
     "fileUris": [
       local.HVHostSetupScriptUri
     ],
-    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File wrapper.ps1 -NIC1IPAddress ${azurerm_network_interface.hypervnicprimary.private_ip_address} -NIC2IPAddress ${azurerm_network_interface.hypervnicsecondary.private_ip_address} -GhostedSubnetPrefix ${local.ghosted_subnet_address_prefix} -VirtualNetworkPrefix ${local.address_spaces[0]}"
+    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File hvhostsetup.ps1 -NIC1IPAddress ${azurerm_network_interface.hypervnicprimary.private_ip_address} -NIC2IPAddress ${azurerm_network_interface.hypervnicsecondary.private_ip_address} -GhostedSubnetPrefix ${local.ghosted_subnet_address_prefix} -VirtualNetworkPrefix ${local.address_spaces[0]}"
   })
 
   timeouts {
     create = "2h30m"
     delete = "1h"
   }
-}
-
-
-output "admin_password" {
-  value     = random_password.admin_password.result
-  sensitive = true
 }

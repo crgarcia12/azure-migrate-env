@@ -1,15 +1,10 @@
-
 locals {
-  instance_suffix = format("%03d", var.instance_number)  # This will always create a 3-digit number with leading zeros
+  prefix = "crgar-migr"
   
-  company_prefix = var.company_code != "" ? lower(var.company_code) : ""
-  
-  vnet_name      = var.company_code != "" ? "vnet-${local.company_prefix}-hyperv-${local.location_map[var.location]}-${local.instance_suffix}" : "vnet-hyperv-${local.location_map[var.location]}-${local.instance_suffix}"
-  appName        = "hyperv"
-  address_spaces = ["172.100.0.0/17"]
-  location_map   = jsondecode(file("${path.module}/configs/geo_codes.tf.json")).locals.builtin_azure_backup_geo_codes               
-  vmname         = var.company_code != "" ? "${local.company_prefix}${var.vmname}${local.location_map[var.location]}${local.instance_suffix}" : "${var.vmname}${local.location_map[var.location]}${local.instance_suffix}"
-  rgname         = var.company_code != "" ? "rg-${local.company_prefix}-${local.appName}-${local.location_map[var.location]}-${local.instance_suffix}" : "rg-${local.appName}-${local.location_map[var.location]}-${local.instance_suffix}"
+  vnet_name      = "${local.prefix}-vnet"
+  address_spaces = ["172.100.0.0/17"]       
+  vm_name         = "${local.prefix}-vm"
+  rg_name         = "${local.prefix}-rg"
   subnets = [
     { name = "nat", address_prefix = "172.100.0.0/24", nsg_name = "nat-nsg", private_ip = "172.100.0.4" },
     { name = "hypervlan", address_prefix = "172.100.1.0/24", nsg_name = "hyperv-nsg", private_ip = "172.100.1.4" },
@@ -17,7 +12,7 @@ locals {
     { name = "azurevms", address_prefix = "172.100.3.0/24", nsg_name = "azurevms-nsg", private_ip = "" }
   ]
 
-ghosted_subnet_address_prefix = local.subnets[2].address_prefix
+  ghosted_subnet_address_prefix = local.subnets[2].address_prefix
 
   nsg_rules = {
     "nat-nsg" = [
