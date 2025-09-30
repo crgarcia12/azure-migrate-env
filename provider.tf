@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      version = "4.5.0"
+      version = "4.44.0"
     }
   }
   backend "azurerm" {
@@ -10,14 +10,15 @@ terraform {
     storage_account_name = "crgarmigratetfstate"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
+    use_azuread_auth     = true
   }
 }
 
 provider "azurerm" {
-    resource_provider_registrations = "none"
-    subscription_id = "96c2852b-cf88-4a55-9ceb-d632d25b83a4"
-   features {
-   }
+  subscription_id = "96c2852b-cf88-4a55-9ceb-d632d25b83a4"
+  storage_use_azuread = true
+  features {
+  }
 }
 
 provider "random" {
