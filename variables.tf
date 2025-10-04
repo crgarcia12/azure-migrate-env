@@ -22,7 +22,7 @@ variable "instance_number" {
 
 variable "artifacts_location" {
   description = "The base URI where artifacts required by this template are located including a trailing '/'"
-  default     = "https://raw.githubusercontent.com/ajdinkajdic/azure-hyperv-setup-terraform/main/"
+  default     = "https://raw.githubusercontent.com/crgarcia12/azure-migrate-env/main/"
 }
 
 # variable "_artifactsLocationSasToken" {
