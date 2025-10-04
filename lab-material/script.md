@@ -1,3 +1,10 @@
+Todo:
+Modernize dotnet
+create pipeline
+deploy to azure
+
+Dr Migrate learning
+
 # Objective
 To have an overview of a large scale migration
 
@@ -143,3 +150,12 @@ Go ahead and tag the different servers from the same workload as shown in the pi
 
 ![alt text](media/10.png)
 
+Now lets explore the software inventory, to fin out the purpose of the server
+
+1. Go to your Azure Migrate project.
+2. Select "Servers, databases and web apps".
+3. Click "Discovered servers".
+4. Choose a server and open its details.
+5. Under "Software inventory", review installed applications and versions.
+
+![alt text](media/11.png)
