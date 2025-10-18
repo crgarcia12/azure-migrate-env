@@ -9,7 +9,7 @@ param location string = 'swedencentral'
 param vmPassword string
 
 @description('Resource name prefix')
-param prefix string = 'migration-lab'
+param prefix string
 
 // Variables (locals from Terraform)
 var vnetName = '${prefix}-vnet'
@@ -123,6 +123,7 @@ module routeTable 'modules/route-table.bicep' = {
 }
 
 // Associate NSGs with Subnets (and Route Table for azurevms)
+@batchSize(1)
 resource nsgAssociations 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = [for (subnet, i) in subnets: {
   name: '${vnetName}/${subnet.name}'
   properties: {
@@ -212,6 +213,14 @@ module windowsVm 'modules/windows-vm.bicep' = {
       ]
       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File hvhostsetup.ps1 -NIC1IPAddress ${nicPrimary.outputs.privateIpAddress} -NIC2IPAddress ${nicSecondary.outputs.privateIpAddress} -GhostedSubnetPrefix ${ghostedSubnetAddressPrefix} -VirtualNetworkPrefix ${addressSpaces[0]}'
     }
+  }
+}
+
+module azureMigrate 'modules/azure-migrate.bicep' = {
+  name: 'deploy-azuire-migrate'
+  params: {
+    location: location  
+    name: '${prefix}-azm'
   }
 }
 

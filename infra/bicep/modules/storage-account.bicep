@@ -1,6 +1,6 @@
 // Default parameters (can be overridden during deployment)
 @description('The name of the storage account')
-param name string = 'crgarmigrdiag'
+param name string
 
 @description('The location for the storage account')
 param location string = 'swedencentral'
