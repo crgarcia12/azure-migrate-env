@@ -59,9 +59,8 @@ $SAPassword = ConvertTo-SecureString $VmAdminPassword -AsPlainText -Force
 $SACredential = New-Object System.Management.Automation.PSCredential ($SAUsername, $SAPassword)
 
 $UbuntuUsername = "demoadmin"
-$UbuntuPassword = ConvertTo-SecureString (.\encryptor.ps1 JMD/3CKu/zNqSfGSHs9D4L4DPPUja2uBrxu9VsTRD+O0u8Luln2mJItoWWRPwC+/ -key demo -mode Decrypt) -AsPlainText -Force
+$UbuntuPassword = ConvertTo-SecureString $VmAdminPassword -AsPlainText -Force
         
-            
 # Base VHDs
 $baseVHDs = @{
     "BASE_SERVER_2019.vhd" = "https://$storageAccountName.blob.core.windows.net/$containerName/BASE_SERVER_2019.vhd?$decryptedSasToken"
